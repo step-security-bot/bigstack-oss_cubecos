@@ -36,6 +36,7 @@ rootfs_install::
 	$(Q)cp -f $(ROOTDIR)/etc/gshadow $(TOP_BLDDIR)/core/main/gshadow.before
 	$(Q)mkdir -p $(ROOTDIR)/etc/rc.d/init.d
 	$(Q)chroot $(ROOTDIR) ln -sf rc.d/init.d /etc/init.d
+	$(Q)mount -t proc proc $(ROOTDIR)/proc
 
 # cube data
 rootfs_install::
@@ -126,6 +127,9 @@ rootfs_install::
 rootfs_install::
 	$(Q)chroot $(ROOTDIR) python3 -m pip install -U pip
 	$(Q)chroot $(ROOTDIR) dnf install -y liburing
+
+rootfs_install::
+	$(Q)umount $(ROOTDIR)/proc
 
 # ceph dashboard sso needs python3-saml which complains LookupError: unknown encoding: cp437
 rootfs_install::
