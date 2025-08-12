@@ -36,7 +36,6 @@ rootfs_install::
 	$(Q)cp -f $(ROOTDIR)/etc/gshadow $(TOP_BLDDIR)/core/main/gshadow.before
 	$(Q)mkdir -p $(ROOTDIR)/etc/rc.d/init.d
 	$(Q)chroot $(ROOTDIR) ln -sf rc.d/init.d /etc/init.d
-	$(Q)mount -t proc proc $(ROOTDIR)/proc
 
 # cube data
 rootfs_install::
@@ -68,7 +67,7 @@ rootfs_install::
 	$(Q)chroot $(ROOTDIR) dnf install -y 'dnf-command(versionlock)'
 	$(Q)umount $(ROOTDIR)/proc
 
-# First try to download kernel-lt from elrepo mirror which has better availabilities
+# First try to download kernel-ml from elrepo mirror which has better availabilities
 rootfs_install::
 	$(Q)cp /etc/yum.repos.d/elrepo-kernel-mirror.repo $(ROOTDIR)/etc/yum.repos.d/
 
@@ -83,7 +82,7 @@ rootfs_install::
 rootfs_install::
 	$(Q)[ ! -e $(ROOTDIR)/etc/yum.repos.d/elrepo.repo ] || sed -i 's/^mirrorlist=.*/#&/g' $(ROOTDIR)/etc/yum.repos.d/elrepo.repo
 
-LOCKED_DNF += kernel-lt-$(KERNEL_VERS) kernel-lt-core-$(KERNEL_VERS) kernel-lt-devel-$(KERNEL_VERS) kernel-lt-modules-$(KERNEL_VERS)
+LOCKED_DNF += kernel-ml-$(KERNEL_VERS) kernel-ml-core-$(KERNEL_VERS) kernel-ml-devel-$(KERNEL_VERS) kernel-ml-modules-$(KERNEL_VERS)
 rootfs_install::
 	$(Q)chroot $(ROOTDIR) dnf versionlock add $(LOCKED_DNF)
 
@@ -127,9 +126,6 @@ rootfs_install::
 rootfs_install::
 	$(Q)chroot $(ROOTDIR) python3 -m pip install -U pip
 	$(Q)chroot $(ROOTDIR) dnf install -y liburing
-
-rootfs_install::
-	$(Q)umount $(ROOTDIR)/proc
 
 # ceph dashboard sso needs python3-saml which complains LookupError: unknown encoding: cp437
 rootfs_install::
