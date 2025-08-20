@@ -499,6 +499,9 @@ health_hacluster_repair()
         $HEX_SDK pacemaker_cluster_stop
         $HEX_SDK pacemaker_cluster_restart
     elif ! cube_node_ready && is_node_rolling_upgrade ; then
+        # release existing vip, irrespective of which node it is on
+        $HEX_SDK pacemaker_cluster_stop
+        $HEX_SDK pacemaker_cluster_restart
         for node in "${CUBE_NODE_CONTROL_HOSTNAMES[@]}" ; do
             if [ "x$node" = "x$HOSTNAME" -a "x$node" = "x$master" ] ; then
                 for i in {1..10} ; do
@@ -2472,13 +2475,24 @@ health_k3s_report()
 
 health_k3s_check()
 {
+    iptables-save >/tmp/iptables
     if ! cubectl config check k3s 2>/dev/null ; then
         ERR_CODE=1
         ERR_LOG="journalctl -n $ERR_LOGSIZE -u k3s"
+        ERR_MSG+="`cubectl config status k3s`\n"
+    elif [ $(diff <(sed 's/^# .*//' /run/iptables) <(sed 's/^# .*//' /tmp/iptables) | wc -l) -gt 1000 ] ; then
+        ERR_CODE=2
+        ERR_MSG+="`cat /tmp/iptables`\n"
     fi
 
-    ERR_MSG+="`cubectl config status k3s`\n"
     _health_fail_log
+}
+
+_health_k3s_auto_repair()
+{
+    if [ "$ERR_CODE" == "2" ] ; then
+        $HEX_SDK network_ipt_restore
+    fi
 }
 
 health_k3s_repair()
