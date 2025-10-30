@@ -4,6 +4,10 @@
 
 void init()
 {
+    // top level commands
+    InitLicense();
+
+    // modules
     InitSys();
 }
 
