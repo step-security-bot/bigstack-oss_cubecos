@@ -4,7 +4,6 @@
 
 void init()
 {
-    InitMain();
     InitSys();
 }
 
