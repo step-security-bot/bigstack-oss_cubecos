@@ -5,6 +5,7 @@
 void init()
 {
     // top level commands
+    InitCommit();
     InitLicense();
 
     // modules
