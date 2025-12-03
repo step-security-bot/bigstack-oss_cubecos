@@ -517,10 +517,14 @@ health_hacluster_repair()
             if [ "x$node" = "x$HOSTNAME" -a "x$node" = "x$last_ctrl" ] ; then
                 $HEX_SDK pacemaker_cluster_stop # release existing vip, irrespective of which node it is on
                 $HEX_SDK pacemaker_cluster_restart
+                remote_run $node "pcs resource create vaw systemd:vaw op monitor interval=\"30s\""
+                remote_run $node "pcs constraint colocation add vip with vaw score=INFINITY"
+                remote_run $node "pcs constraint order vip then vaw"
             elif [ "x$node" = "x$HOSTNAME" ] ; then
                 $HEX_SDK pacemaker_node_stop $node
             else
                 $HEX_SDK pacemaker_node_start $node
+                remote_run $node "pcs resource remove vaw" # v3.0.0 or older doesn't have vaw, hindering VIP to start
             fi
         done
     elif [ ! -e /etc/appliance/state/configured ] || [ -e /run/cube_migration ] ; then
