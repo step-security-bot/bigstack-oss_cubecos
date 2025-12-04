@@ -1,0 +1,11 @@
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /core/cubectl/app
+    schedule:
+      interval: daily
+
+  - package-ecosystem: gomod
+    directory: /core/rancher/rancher-machine-driver-cube
+    schedule:
+      interval: daily
